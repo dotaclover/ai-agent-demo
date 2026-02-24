@@ -157,7 +157,8 @@ func RegisterTools(registry *agent.ToolRegistry, apiKey, baseURL, chatModel, ima
 - 字数：%s
 - 包含吸引人的标题
 - 结构清晰，分段合理
-- 适合社交媒体发布`, args.Topic, style)
+- 适合社交媒体发布
+- 只写一个内容，不要多个`, args.Topic, style, length)
 			if args.Keywords != "" {
 				prompt += fmt.Sprintf("\n- 自然融入关键词：%s", args.Keywords)
 			}

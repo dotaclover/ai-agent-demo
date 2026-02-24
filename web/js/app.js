@@ -220,8 +220,25 @@ function renderMessages() {
     } else if (m.role === 'tool') {
       console.log(`Tool Result [${m.name}]:`, m.content);
       const mediaEl = renderMediaOnly(m.content, m.name);
-      if (mediaEl) bubble.appendChild(mediaEl);
-      else { i++; continue; }
+      if (mediaEl) {
+        bubble.appendChild(mediaEl);
+      } else if (m.name === 'write_article') {
+        // 处理文章生成工具，显示 markdown 内容
+        try {
+          const data = JSON.parse(m.content);
+          if (data.article) {
+            const mdContainer = document.createElement('div');
+            mdContainer.className = 'markdown-body';
+            mdContainer.innerHTML = marked.parse(data.article);
+            bubble.appendChild(mdContainer);
+          }
+        } catch (e) {
+          console.error("Parse article error", e);
+          i++; continue;
+        }
+      } else {
+        i++; continue;
+      }
     }
 
     msgDiv.appendChild(avatar);

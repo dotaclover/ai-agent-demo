@@ -244,6 +244,16 @@ body {
 
 .markdown-body p { margin-bottom: 0.5rem; }
 .markdown-body p:last-child { margin-bottom: 0; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  font-size: 1em;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  color: var(--text-primary);
+}
+.markdown-body h1:first-child { margin-top: 0; }
+.markdown-body strong { font-weight: 600; color: var(--text-primary); }
+.markdown-body ul, .markdown-body ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+.markdown-body li { margin-bottom: 0.25rem; }
 
 /* Media */
 .media-container {
@@ -475,6 +485,35 @@ textarea {
 .suggestion-item:hover {
   border-color: var(--primary);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Agent Info */
+.agent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  max-width: 400px;
+  width: 100%;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.info-item:hover {
+  border-color: var(--primary);
+  transform: translateX(4px);
   box-shadow: var(--shadow-sm);
 }
 

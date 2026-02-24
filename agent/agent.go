@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -66,6 +67,7 @@ func (a *Agent) Run(ctx context.Context, messages []Message, onMessage func(Mess
 	result := &RunResult{}
 
 	for i := 0; i < a.config.MaxIterations; i++ {
+		log.Printf("[Agent] iteration %d, messages count: %d", i+1, len(allMessages))
 		result.Iterations = i + 1
 
 		resp, err := a.provider.Chat(ctx, allMessages, tools, llmCfg)
@@ -78,6 +80,7 @@ func (a *Agent) Run(ctx context.Context, messages []Message, onMessage func(Mess
 
 		// 没有 tool_calls → 最终回复
 		if len(resp.ToolCalls) == 0 {
+			log.Printf("[Agent] no tool_calls, returning final response")
 			assistantMsg := Message{
 				ID:        newID(),
 				Role:      RoleAssistant,
@@ -148,6 +151,13 @@ func (a *Agent) Run(ctx context.Context, messages []Message, onMessage func(Mess
 			allMessages = append(allMessages, toolMsg)
 			if onMessage != nil {
 				onMessage(toolMsg)
+			}
+
+			// 如果是 write_article 工具，直接返回，不再进行下一轮迭代
+			if tc.Name == "write_article" {
+				log.Printf("[Agent] write_article executed, returning early")
+				result.Messages = allMessages
+				return result, nil
 			}
 		}
 	}
