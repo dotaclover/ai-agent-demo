@@ -22,6 +22,10 @@ function initApp() {
   document.getElementById('arkKey').value = localStorage.getItem('ark_api_key') || '';
   document.getElementById('bochaKey').value = localStorage.getItem('bocha_api_key') || '';
 
+  // 调试：检查 sessionId 是否正确加载
+  console.log('[Init] sessionId from localStorage:', sessionId);
+  console.log('[Init] messages count:', messages.length);
+
   try {
     const savedMsgs = JSON.parse(localStorage.getItem('agent_messages') || '[]');
     messages = savedMsgs;
@@ -113,6 +117,8 @@ async function sendMessage() {
   const userMsg = { role: 'user', content: text };
   messages.push(userMsg);
   renderMessages();
+  // 立即保存用户消息
+  localStorage.setItem('agent_messages', JSON.stringify(messages.slice(-200)));
 
   try {
     const bochaKey = localStorage.getItem('bocha_api_key') || '';
@@ -151,6 +157,7 @@ async function sendMessage() {
 
         if (event === 'session') {
           const newSessionId = data;
+          console.log('[Session] old:', sessionId, 'new:', newSessionId);
           // 检测会话是否被重置（后端返回了新的 session_id）
           if (sessionId && sessionId !== newSessionId) {
             // 标记当前消息位置为会话重置点
@@ -159,25 +166,33 @@ async function sendMessage() {
           }
           sessionId = newSessionId;
           localStorage.setItem('agent_session_id', sessionId);
+          console.log('[Session] saved to localStorage:', sessionId);
         } else if (event === 'message') {
           const msg = JSON.parse(data);
+          console.log('[Message] received:', msg.role, msg.name || '', 'total:', messages.length + 1);
           const existingIdx = messages.findIndex(m => m.id === msg.id);
           if (existingIdx !== -1) messages[existingIdx] = msg;
           else messages.push(msg);
           renderMessages();
+          // 立即保存消息，防止刷新丢失
+          localStorage.setItem('agent_messages', JSON.stringify(messages.slice(-200)));
+          console.log('[Storage] saved', messages.length, 'messages');
         } else if (event === 'error') {
           const err = JSON.parse(data);
           messages.push({ role: 'assistant', content: `**服务错误**: ${err.error}` });
           renderMessages();
+          localStorage.setItem('agent_messages', JSON.stringify(messages.slice(-200)));
         } else if (event === 'done') {
           finishResponse();
         }
       }
     }
+    // 最后再保存一次，确保完整
     localStorage.setItem('agent_messages', JSON.stringify(messages.slice(-200)));
   } catch (err) {
     messages.push({ role: 'assistant', content: `**连接错误**: ${err.message}` });
     renderMessages();
+    localStorage.setItem('agent_messages', JSON.stringify(messages.slice(-200)));
   } finally {
     finishResponse();
   }
@@ -193,6 +208,7 @@ function finishResponse() {
 }
 
 function renderMessages() {
+  console.log('[Render] messages count:', messages.length);
   chatList.innerHTML = '';
   if (messages.length === 0) {
     chatList.appendChild(welcomeScreen);

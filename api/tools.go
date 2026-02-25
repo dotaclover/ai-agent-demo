@@ -56,6 +56,8 @@ func RegisterTools(registry *agent.ToolRegistry, apiKey, baseURL, chatModel, ima
 				return "", err
 			}
 
+			log.Printf("[Tool] generate_image 成功: %s", resp.URL)
+
 			result, _ := json.Marshal(map[string]interface{}{
 				"image_url": resp.URL,
 				"prompt":    args.Prompt,
@@ -104,6 +106,8 @@ func RegisterTools(registry *agent.ToolRegistry, apiKey, baseURL, chatModel, ima
 			if err != nil {
 				return "", err
 			}
+
+			log.Printf("[Tool] generate_video 提交成功, task_id: %s", resp.TaskID)
 
 			result, _ := json.Marshal(map[string]interface{}{
 				"task_id": resp.TaskID,
@@ -227,9 +231,11 @@ func RegisterTools(registry *agent.ToolRegistry, apiKey, baseURL, chatModel, ima
 					}
 					if resp.URL != "" {
 						resultMap["video_url"] = resp.URL
+						log.Printf("[Tool] query_video_task 成功, task_id: %s, video_url: %s", resp.TaskID, resp.URL)
 					}
 					if resp.Error != "" {
 						resultMap["error"] = resp.Error
+						log.Printf("[Tool] query_video_task 失败, task_id: %s, error: %s", resp.TaskID, resp.Error)
 					}
 					result, _ := json.Marshal(resultMap)
 					return string(result), nil
