@@ -572,3 +572,30 @@ textarea {
   justify-content: center;
 }
 .modal-close:hover { background: rgba(255,255,255,0.2); }
+
+/* Session Divider */
+.session-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+  position: relative;
+  width: 100%;
+}
+
+.session-divider::before,
+.session-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.session-divider span {
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--bg-canvas);
+  white-space: nowrap;
+  font-weight: 500;
+}

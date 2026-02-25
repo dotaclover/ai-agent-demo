@@ -2,6 +2,7 @@
 let sessionId = localStorage.getItem('agent_session_id') || '';
 let messages = []; // Array of {role, content, tool_calls, name}
 let isBusy = false;
+let sessionResetMarkerIndex = -1; // 标记会话重置的位置
 
 // Dom elements
 const chatList = document.getElementById('chatList');
@@ -47,6 +48,7 @@ function clearHistory() {
   if (confirm("确定要清空所有聊天历史吗？")) {
     messages = [];
     sessionId = '';
+    sessionResetMarkerIndex = -1;
     localStorage.removeItem('agent_messages');
     localStorage.removeItem('agent_session_id');
     renderMessages();
@@ -148,7 +150,14 @@ async function sendMessage() {
         }
 
         if (event === 'session') {
-          sessionId = data;
+          const newSessionId = data;
+          // 检测会话是否被重置（后端返回了新的 session_id）
+          if (sessionId && sessionId !== newSessionId) {
+            // 标记当前消息位置为会话重置点
+            sessionResetMarkerIndex = messages.length;
+            showToast("会话已重置，上下文已清空");
+          }
+          sessionId = newSessionId;
           localStorage.setItem('agent_session_id', sessionId);
         } else if (event === 'message') {
           const msg = JSON.parse(data);
@@ -165,7 +174,7 @@ async function sendMessage() {
         }
       }
     }
-    localStorage.setItem('agent_messages', JSON.stringify(messages.slice(-100)));
+    localStorage.setItem('agent_messages', JSON.stringify(messages.slice(-200)));
   } catch (err) {
     messages.push({ role: 'assistant', content: `**连接错误**: ${err.message}` });
     renderMessages();
@@ -197,6 +206,14 @@ function renderMessages() {
   while (i < messages.length) {
     const m = messages[i];
     if (m.role === 'system') { i++; continue; }
+
+    // 在会话重置标记处插入分隔线
+    if (sessionResetMarkerIndex !== -1 && i === sessionResetMarkerIndex) {
+      const divider = document.createElement('div');
+      divider.className = 'session-divider';
+      divider.innerHTML = '<span>以上为历史对话</span>';
+      chatList.appendChild(divider);
+    }
 
     const msgDiv = document.createElement('div');
     msgDiv.className = `msg ${m.role === 'user' ? 'user' : 'ai'}`;

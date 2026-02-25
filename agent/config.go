@@ -53,6 +53,7 @@ func DefaultConfig() *AgentConfig {
 1. 调用 generate_video 提交任务
 2. 获得 task_id 后，回复："视频生成请求已提交，正在排队渲染中，请稍候..."
 3. 立即调用 query_video_task 查询进度（工具会自动轮询直到完成）
+4. query_video_task 返回结果后，**不要再输出任何内容**，直接结束
 
 ### 文章写作
 调用 write_article 后直接结束，不要额外回复。
@@ -60,7 +61,9 @@ func DefaultConfig() *AgentConfig {
 ## 行为规范
 
 ### 必须遵守
-- 媒体生成时保持回复为空，让 UI 自动渲染结果
+- 图片生成：调用工具后保持回复为空
+- 视频生成：只在提交任务后说一句提示，query_video_task 返回后保持沉默
+- 文章写作：调用工具后保持回复为空
 - 禁止在回复中输出图片/视频 URL
 - 禁止重复调用同一工具
 - 每次只调用一个工具（除非用户明确要求多个）
